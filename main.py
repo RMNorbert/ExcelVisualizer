@@ -3,14 +3,21 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 import math
+import time
 
-
-show_visualization = False
+if "show_visualization" not in st.session_state:
+    st.session_state["show_visualization"] = False
 
 
 def visualize():
-    global show_visualization
-    show_visualization = True
+    st.session_state["show_visualization"] = True
+    global title
+    title = st.session_state["file"]
+
+
+def re_visualize():
+    st.session_state["show_visualization"] = False
+    #st.cache_data.clear
 
 
 title = "ExcelVisualizer"
@@ -20,12 +27,13 @@ st.set_page_config(
     layout="wide"
 )
 
+
 # Sidebar customization
-if not show_visualization:
-    st.sidebar.header("To start, set the options and click the 'Visualize' button.")
+if not st.session_state["show_visualization"]:
+    header = st.sidebar.header("To start, set the options and click on the 'Visualize' button.")
     select_file = st.sidebar.text_input(
         label="Please insert the name of the file here:",
-        placeholder="example.xlsx",
+        placeholder="supermarkt_sales.xlsx",
         help="Currently, only XML files supported which located next to the main.py file."
     )
     select_sheet = st.sidebar.text_input(
@@ -50,25 +58,40 @@ if not show_visualization:
         help="The default value is 1. The number of rows that will be used during the visualization. "
              "The count of rows starts from the top."
     )
-
+    select_filters = st.sidebar.text_input(
+        label="Please provide the name of the columns you would like to use for filtering:",
+        placeholder="City,Gender",
+        help="You can use any number of filter just separate them with: , "
+    )
     visualize_button = st.sidebar.button(label="Visualize")
 
     if visualize_button:
+        if "select_filters" not in st.session_state:
+            st.session_state["file"] = select_file
+            st.session_state["sheet"] = select_sheet
+            st.session_state["skipped"] = select_rows_to_skip
+            st.session_state["columns"] = select_columns
+            st.session_state["shown"] = select_number_of_rows_to_show
+            st.session_state["filters"] = select_filters
         visualize()
 
 
-if show_visualization:
+if st.session_state["show_visualization"]:
+    time.sleep(0.5)
     # readingOptions
+    array = st.session_state["filters"].split(',') if "," in st.session_state["filters"] else [
+        st.session_state["filters"]]
+    length = len(array)
 
-#    @st.cache_data  # store data in short term memory
+    @st.cache_data  # store data in short term memory
     def get_data_from_excel():
         df = pd.read_excel(
-            io=select_file,  # excel file name eg:io='supermarkt_sales.xlsx',
+            io=st.session_state["file"],  # excel file name eg:io='supermarkt_sales.xlsx',
             engine='openpyxl',  #
-            sheet_name=select_sheet,  # sheet name eg: sheet_name='Sales',
-            skiprows=select_rows_to_skip,  # how many rows to skip eg: skiprows=3,
-            usecols=select_columns,  # which columns to use eg: usecols='B:R',,
-            nrows=select_number_of_rows_to_show,  # how many rows include on the selection eg: nrows=1000,
+            sheet_name=st.session_state["sheet"],  # sheet name eg: sheet_name='Sales',
+            skiprows=st.session_state["skipped"],  # how many rows to skip eg: skiprows=3,
+            usecols=st.session_state["columns"],  # which columns to use eg: usecols='B:R',,
+            nrows=st.session_state["shown"],  # how many rows include on the selection eg: nrows=1000,
         )
 
         if "Time" in df.columns:
@@ -78,33 +101,49 @@ if show_visualization:
 
 
     df = get_data_from_excel()
-
-    st.sidebar.header("Please Filter Here:")
+    header = st.sidebar.header("Please Filter Here:")
     #custom filter now by city
-    city = st.sidebar.multiselect(
-        "Select the City:",
-        options=df["City"].unique(),
-        default=df["City"].unique()
-    )
+    filter1 = st.sidebar.multiselect(
+                    "Select the " + array[0] + ":",
+                    options=df[array[0]].unique(),
+                    default=df[array[0]].unique()
+                ) if not length == 1 else None
+    if length >= 2:
+        filter2 = st.sidebar.multiselect(
+                "Select the " + array[1] + ":",
+                options=df[array[1]].unique(),
+                default=df[array[1]].unique()
+            )
+    if length >= 3:
+        filter3 = st.sidebar.multiselect(
+                "Select the " + array[2] + ":",
+                options=df[array[2]].unique(),
+                default=df[array[2]].unique()
+            )
 
-    customer_type = st.sidebar.multiselect(
-        "Select the Customer Type:",
-        options=df["Customer_type"].unique(),
-        default=df["Customer_type"].unique()
-    )
+    query = ""
 
-    gender = st.sidebar.multiselect(
-        "Select the Gender:",
-        options=df["Gender"].unique(),
-        default=df["Gender"].unique()
-    )
+    for s in range(0, length, 1):
+        query += array[s] + " == @"
+        if s == 0:
+            query += "filter1"
+        if s == 1:
+            query += "filter2"
+        if s == 2:
+            query += "filter3"
+        if not s == length - 1:
+            query += " & "
+    # Generate the multiselect component
 
     df_selection = df.query(
-        "City == @city & Customer_type == @customer_type & Gender == @gender"
+        query
     )
-#print(df_selection)
 
-#main_page
+    re_select = st.sidebar.button(label="Select another file")
+    if re_select:
+        re_visualize()
+
+    #main_page
     st.title(":bar_chart: " + title)
     st.markdown("##")
 
@@ -164,7 +203,6 @@ if show_visualization:
         plot_bgcolor="rgba(0,0,0,0)",
         yaxis=(dict(showgrid=False)),
     )
-
 
     left_column, right_column = st.columns(2)
     left_column.plotly_chart(fig_hourly_sales, use_container_width=True)
