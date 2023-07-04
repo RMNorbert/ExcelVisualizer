@@ -6,10 +6,11 @@
 
 [![Python](https://img.shields.io/badge/Python-blue.svg?logo=python&logoColor=white&labelColor=555555&style=for-the-badge)](https://www.python.org/)
 [![Pandas](https://img.shields.io/badge/Pandas-red.svg?logo=pandas&logoColor=white&labelColor=555555&style=for-the-badge)](https://pandas.pydata.org/)
-[![Openpyxl](https://img.shields.io/badge/Openpyxl-green.svg?logo=openpyxl&logoColor=white&labelColor=555555&style=for-the-badge)](https://openpyxl.readthedocs.io/)
+[![Openpyxl](https://img.shields.io/badge/Openpyxl-green.svg?label=R/W%20Excel&logoColor=white&labelColor=555555&style=for-the-badge)](https://openpyxl.readthedocs.io/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B.svg?logo=streamlit&logoColor=white&labelColor=555555&style=for-the-badge)](https://streamlit.io/)
 [![Plotly Express](https://img.shields.io/badge/Plotly%20Express-0E8EE9.svg?logo=plotly&logoColor=white&labelColor=555555&style=for-the-badge)](https://plotly.com/python/plotly-express/)
-
+[![License: MIT](https://img.shields.io/badge/-MIT-blue.svg?label=license&logoColor=white&style=for-the-badge)](LICENSE "License")
+[![Last Commit](https://img.shields.io/github/last-commit/RMNorbert/ExcelVisualizer?logo=github&label=Last%20Commit&style=for-the-badge&display_timestamp=committer)](https://github.com/RMNorbert/ExcelVisualizer/commits "Commit History")
 </div>
 <!-- MANPAGE: END EXCLUDED SECTION -->
 
@@ -76,9 +77,4 @@ bash
 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-
-
-
-
 
