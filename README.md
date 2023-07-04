@@ -1,7 +1,7 @@
 <!-- MANPAGE: BEGIN EXCLUDED SECTION -->
 <div align="center">
 
-[<img src="https://github.com/RMNorbert/ExcelVisualizer/blob/main/My%20project.png" alt="ExcelVisualizer" width="100">](README.md)
+[<img src="https://github.com/RMNorbert/ExcelVisualizer/blob/main/Title.png" alt="ExcelVisualizer" width="200">](README.md)
 <!--[![GitHub latest release version](https://img.shields.io/github/v/release/RMNorbert/ExcelVisualizer.svg?style=flat)](https://github.com/RMNorbert/ExcelVisualizer/releases/latest) -->
 
 [![Python](https://img.shields.io/badge/Python-blue.svg?logo=python&logoColor=white&labelColor=555555&style=for-the-badge)](https://www.python.org/)
