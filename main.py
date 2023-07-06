@@ -2,7 +2,6 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
-import math
 import time
 
 if "show_visualization" not in st.session_state:
@@ -11,6 +10,13 @@ if "show_visualization" not in st.session_state:
 
 if st.session_state.get('count') is None:
     st.session_state.count = 0
+
+
+def is_column_exist(column_name, else_return):
+    if column_name in df_selection:
+        return True
+    else:
+        return else_return
 
 
 def visualize():
@@ -28,6 +34,9 @@ def next_func():
         st.session_state["columns"] = select_columns
         st.session_state["shown"] = select_number_of_rows_to_show
         st.session_state["filters"] = select_filters
+        st.session_state["total"] = select_total
+        st.session_state["financial"] = select_unit
+        st.session_state["group_by"] = select_group
         st.session_state.count += 1
     visualize()
 
@@ -58,46 +67,73 @@ if not st.session_state["show_visualization"]:
             select_file = st.text_input(
                 label="Please insert the name of the file here:",
                 placeholder="supermarkt_sales.xlsx",
-                help="Currently, only XML files supported which located next to the main.py file."
+                help="Currently, only XML files supported which located next to the main.py file.",
+                value="supermarkt_sales.xlsx"
             )
             select_sheet = st.text_input(
                 label="Please enter the name of the sheet to visualize:",
-                placeholder="Example",
-                help="Currently, only one sheet can be visualized."
+                placeholder="Sales",
+                help="Currently, only one sheet can be visualized.",
+                value="Sales"
             )
             select_rows_to_skip = st.number_input(
                 label="Please provide the number of rows to skip:",
                 min_value=0,
-                help="The default value is 0. The count of rows starts from the top. "
-                     "The provided number of rows will not be processed during the visualization."
+                help="The default value is 3. The count of rows starts from the top. "
+                     "The provided number of rows will not be processed during the visualization.",
+                value=3
             )
             select_columns = st.text_input(
                 label="Please enter the columns to visualize:",
                 placeholder="B:R",
-                help="The default value will contain A:B."
+                help="The default value will contain A:B.",
+                value="B:R"
             )
             select_number_of_rows_to_show = st.number_input(
                 label="Please provide the number of rows to show:",
                 min_value=1,
                 help="The default value is 1. The number of rows that will be used during the visualization. "
-                     "The count of rows starts from the top."
+                     "The count of rows starts from the top.",
+                value=100
             )
             select_filters = st.text_input(
                 label="Please provide the name of the columns you would like to use for filtering:",
                 placeholder="City,Gender",
-                help="You can use any number of filter just separate them with: , "
+                help="You can use any number of filter just separate them with: , ",
+                value="City,Gender"
             )
+            select_total = st.text_input(
+                label="Please provide the name of the column to calculate the total value:",
+                placeholder="Total",
+                help="""You can one column only for the calculation. The base value will be the "Total"column """,
+                value="Total"
+            )
+            select_unit = st.text_input(
+                label="Please provide the base of the financial, thermochemical or unit for the calculations:",
+                placeholder="US $ or kcal, ect.",
+                help="""You can give only one unit type for the calculations. The base value will be the "US $ """,
+                value="US $"
+            )
+            select_group = st.text_input(
+                label="Please provide the column to use to group by calculation:",
+                placeholder="Product line",
+                help="""You can give only one column name. The base value will be Product line""",
+                value="Product line"
+            )
+
             next_button = st.button(label="Next step", on_click=next_func)
 
 
 if st.session_state["show_visualization"]:
     if st.session_state.count != 0:
         time.sleep(0.5)
-    # readingOptions
-        array = st.session_state["filters"].split(',') if "," in st.session_state["filters"] else [
-            st.session_state["filters"]]
+    # variables set for repeated use
+        array = st.session_state["filters"].split(',') if "," in st.session_state["filters"] else [st.session_state["filters"]]
         length = len(array)
+        total = st.session_state["total"]
+        group_by = st.session_state["group_by"]
 
+        # readingOptions
         @st.cache_data  # store data in short term memory
         def get_data_from_excel():
             df = pd.read_excel(
@@ -118,23 +154,24 @@ if st.session_state["show_visualization"]:
         df = get_data_from_excel()
         header = st.sidebar.header("Please Filter Here:")
         #custom filter now by city
+
         filter1 = st.sidebar.multiselect(
                         "Select the " + array[0] + ":",
                         options=df[array[0]].unique(),
                         default=df[array[0]].unique()
-                    ) if not length == 1 else None
-        if length >= 2:
-            filter2 = st.sidebar.multiselect(
+                    ) if length >= 1 else None
+
+        filter2 = st.sidebar.multiselect(
                     "Select the " + array[1] + ":",
                     options=df[array[1]].unique(),
                     default=df[array[1]].unique()
-                )
-        if length >= 3:
-            filter3 = st.sidebar.multiselect(
+                    ) if length >= 2 else None
+
+        filter3 = st.sidebar.multiselect(
                     "Select the " + array[2] + ":",
                     options=df[array[2]].unique(),
                     default=df[array[2]].unique()
-                )
+                    ) if length == 3 else None
 
         query = ""
 
@@ -160,67 +197,76 @@ if st.session_state["show_visualization"]:
     #main_page
         st.title(":bar_chart: " + title)
         st.markdown("##")
+        total_sum = int(df_selection[total].sum())
 
-        total_sales = int(df_selection["Total"].sum())
-        average_rating = round(df_selection["Rating"].mean(), 1)
-        star_rating = ":star:" * int(round(average_rating, 0)) if not 0 else ""
-        average_sale_by_transaction = round(df_selection["Total"].mean(), 2)
+        try:
+            average_rating = round(df_selection["Rating"].mean(), 1)
+        except KeyError:
+            average_rating = ""
+            star_rating = ""
+        try:
+            star_rating = ":star:" * int(round(average_rating, 0))
+        except ValueError:
+            star_rating = ""
+
+        average_value = round(df_selection[total].mean(), 2)
 
         left_column, middle_column, right_column = st.columns(3)
         with left_column:
-            st.subheader("Total Sales:")
-            st.subheader(f"US $ {total_sales:,}")
+            f = st.session_state.get("financial")
+            t = st.subheader("Sum of " + total)
+            st.subheader(f"{f} {total_sum:,}")
         with middle_column:
             st.subheader("Average Rating:")
             st.subheader(f"{average_rating} {star_rating}")
         with right_column:
-            st.subheader("Average Sales Per Transaction:")
-            st.subheader(f"US $ {average_sale_by_transaction}")
+            st.subheader("Average Value:")
+            st.subheader(f"{f} {average_value}")
 
         st.markdown("""---""")
 
 #bar_charts
 
-        sales_by_product_line = (
+        values_by_group = (
             df_selection
-            .groupby(by=["Product line"])["Total"]
+            .groupby(by=[group_by])[total]
             .sum()
             #.reset_index() to show as index
             #.sort_values("Total")
         )
-        fig_product_sales = px.bar(
-            sales_by_product_line,
-            x="Total",
-            y=sales_by_product_line.index,
+        fig_values = px.bar(
+            values_by_group,
+            x=total,
+            y=values_by_group.index,
             orientation="h", #horizontal_bar_chart
-            title="<b>Sales by Product Line",
-            color_discrete_sequence=["#0083B8"] * len(sales_by_product_line),
+            title="<b>Value by " + group_by,
+            color_discrete_sequence=["#0083B8"] * len(values_by_group),
             template="plotly_white", #template_style
         )
-        fig_product_sales.update_layout(
+        fig_values.update_layout(
             plot_bgcolor="rgba(0,0,0,0)",
             xaxis=(dict(showgrid=False))
         )
 
-    # SALES BY HOUR [BAR CHART]
-        sales_by_hour = df_selection.groupby(by=["hour"])[["Total"]].sum()
-        fig_hourly_sales = px.bar(
-            sales_by_hour,
-            x=sales_by_hour.index,
+    # VALUES BY HOUR [BAR CHART]
+        values_by_hour = df_selection.groupby(by=["hour"])[[total]].sum()
+        fig_hourly_values = px.bar(
+            values_by_hour,
+            x=values_by_hour.index,
             y="Total",
-            title="<b>Sales by hour</b>",
-            color_discrete_sequence=["#0083B8"] * len(sales_by_hour),
+            title="<b>Values by hour</b>",
+            color_discrete_sequence=["#0083B8"] * len(values_by_hour),
             template="plotly_white",
         )
-        fig_hourly_sales.update_layout(
+        fig_hourly_values.update_layout(
             xaxis=dict(tickmode="linear"),
             plot_bgcolor="rgba(0,0,0,0)",
             yaxis=(dict(showgrid=False)),
         )
 
         left_column, right_column = st.columns(2)
-        left_column.plotly_chart(fig_hourly_sales, use_container_width=True)
-        right_column.plotly_chart(fig_product_sales, use_container_width=True)
+        left_column.plotly_chart(fig_hourly_values, use_container_width=True)
+        right_column.plotly_chart(fig_values, use_container_width=True)
 
 
 hide_st_style = """
