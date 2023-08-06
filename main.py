@@ -7,46 +7,33 @@ import time
 if 'show_visualization' not in st.session_state:
     st.session_state["show_visualization"] = False
 
-
 if st.session_state.get('count') is None:
     st.session_state.count = 0
 
 
-def is_column_exist(column_name, else_return):
-    if column_name in df_selection:
-        return True
-    else:
-        return else_return
+def setStates():
+    st.session_state["file"] = select_file
+    st.session_state["sheet"] = select_sheet
+    st.session_state["skipped"] = select_rows_to_skip
+    st.session_state["columns"] = select_columns
+    st.session_state["shown"] = select_number_of_rows_to_show
+    st.session_state["filters"] = select_filters
+    st.session_state["total"] = select_total
+    st.session_state["unit"] = select_unit
+    st.session_state["group_by"] = select_group
+    st.session_state.count += 1
 
 
 def visualize():
+    if "select_filters" not in st.session_state:
+        setStates()
     global title
     title = st.session_state["file"]
     st.session_state["show_visualization"] = True
     st.session_state.count += 1
 
 
-def next_func():
-    if "select_filters" not in st.session_state:
-        st.session_state["file"] = select_file
-        st.session_state["sheet"] = select_sheet
-        st.session_state["skipped"] = select_rows_to_skip
-        st.session_state["columns"] = select_columns
-        st.session_state["shown"] = select_number_of_rows_to_show
-        st.session_state["filters"] = select_filters
-        st.session_state["total"] = select_total
-        st.session_state["unit"] = select_unit
-        st.session_state["group_by"] = select_group
-        st.session_state.count += 1
-    visualize()
-
-
-def return_to_select():
-    st.session_state.count = 0
-    re_visualize()
-
-
-def re_visualize():
+def return_to_options():
     st.session_state["show_visualization"] = False
     st.session_state.count = 0
     st.cache_data.clear()
@@ -121,13 +108,13 @@ if not st.session_state["show_visualization"]:
                 value="Product line"
             )
 
-            next_button = st.button(label="Next step", on_click=next_func)
+            visualize_button = st.button(label="Visualize", on_click=visualize)
 
 
 if st.session_state["show_visualization"]:
     if st.session_state.count != 0:
         time.sleep(0.5)
-    # variables set for repeated use
+        # variables set for repeated use
         array = st.session_state["filters"].split(',') if "," in st.session_state["filters"] else [st.session_state["filters"]]
         length = len(array)
         total = st.session_state["total"]
@@ -159,7 +146,7 @@ if st.session_state["show_visualization"]:
 
         df = get_data_from_excel()
         header = st.sidebar.header("Please Filter Here:")
-        #custom filter initial by city
+        # custom filter
 
         filter1 = st.sidebar.multiselect(
                         "Select the " + array[0] + ":",
@@ -197,10 +184,9 @@ if st.session_state["show_visualization"]:
             query
         )
 
-        re_select = st.button(label="Select another file", on_click=return_to_select)
+        re_select = st.button(label="Select another file", on_click=return_to_options)
 
-
-    #main_page
+    # main_page
         st.title(":bar_chart: " + title)
         st.markdown("##")
         total_sum = int(round(df_selection[total].sum()))
@@ -274,10 +260,11 @@ if st.session_state["show_visualization"]:
 
             left_column.plotly_chart(fig_hourly_values, use_container_width=True)
 
-
 hide_st_style = """
             <style>
             #MainMenu {visibility: hidden;}
+            .main {margin-top: -85px !important;}
+            .element-container > div {margin-top: -10px !important;}
             footer {visibility: hidden;}
             header {visibility: hidden;}
             </style>
