@@ -24,7 +24,8 @@
 ## Description
 
 ExcelVisualizer is a Python-based tool for visualizing data from Excel files. 
-It utilizes the power of pandas, openpyxl, streamlit, and plotly express to provide a user-friendly interface for exploring and analyzing Excel data. With ExcelVisualizer, you can easily select specific sheets, skip rows, choose columns, and apply filters to create insightful visualizations.
+It utilizes the power of pandas, openpyxl, streamlit, and plotly express to provide a user-friendly interface for exploring and analyzing Excel data.  
+With ExcelVisualizer, you can easily select specific sheets, skip rows, choose columns, and apply filters to create insightful visualizations.
 
 ## Used technologies
 
@@ -59,20 +60,23 @@ Make sure you have Python installed on your machine. You can download Python fro
    ```
    git clone https://github.com/RMNorbert/ExcelVisualizer.git
    ```
-   nstall the required packages:
+   install the required packages with one of the following command:
+   ```
+   pip install -r requirements.txt
+   ```
 
-bash
-
-pip install pandas openpyxl streamlit plotly
-
+   bash
+   ```
+   pip install pandas openpyxl streamlit plotly
+   ```
 Run the Streamlit app:
 
-bash
-
+   bash
+   ```
     streamlit run app.py
-
-    Access the application:
-    Once the Streamlit app is running, you can access it in your web browser at http://localhost:8501.
+   ```
+ Access the application:
+ Once the Streamlit app is running, you can access it in your web browser at http://localhost:8501.
 
 License
 
