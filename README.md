@@ -27,7 +27,7 @@ ExcelVisualizer is a Python-based tool for visualizing data from Excel files.
 It utilizes the power of pandas, openpyxl, streamlit, and plotly express to provide a user-friendly interface for exploring and analyzing Excel data.  
 With ExcelVisualizer, you can easily select specific sheets, skip rows, choose columns, and apply filters to create insightful visualizations.
 
-## Used technologies
+## Used technologies & Packages
 
 - Python
 - Pandas
